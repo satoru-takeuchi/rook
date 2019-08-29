@@ -1,0 +1,24 @@
+# How to deploy Ceph cluster
+
+1. Prepare /dev/vdb which size is more than 5GiB, in the test machine. If you want to change the device name, please modify the `vdb` with other name in the cluster-sat.yaml.
+
+1. Prepare the cluster created by topolvm(HEAD is 5b451eb64f34816a726903062812726a0fcd4083) e2e test.
+
+1. Apply the following resources of Rook/Ceph.
+
+```console
+$ kubectl apply -f common.yaml
+$ kubectl apply -f operator-with-csi.yaml
+$ kubectl apply -f cluster-sat.yaml
+```
+
+1. (it can skip) Confirmed that raw block volume feature works fine
+
+```console
+$ kubectl apply -f raw-block-volume-pod-test.yaml
+kubectl exec -it raw-block-volume-pod-test -- bash
+# ls -l /dev/block
+brw-rw-rw- 1 root root 253, 9 Aug 29 07:40 /dev/block
+# exit
+$ kubectl delete pod raw-block-volume-pod-test
+```

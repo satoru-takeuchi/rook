@@ -1,0 +1,34 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: topo-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Block
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: topolvm-provisioner
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: raw-block-volume-pod-test
+  labels:
+    app.kubernetes.io/name: rook-osd-test
+spec:
+  containers:
+    - name: raw-block-volume-pod-test
+      image: ubuntu
+      command: ["sleep", "infinity"]
+      volumeDevices:
+        - devicePath: /dev/block
+          name: my-volume
+      securityContext:
+        capabilities:
+          add: ["SYS_ADMIN", "SYS_RAWIO"]
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: topo-pvc
