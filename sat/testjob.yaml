@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: testjob
+spec:
+  template:
+    spec:
+      containers:
+      - name: testjob
+        image: ubuntu
+        command: ["sleep", "1"]
+        volumeDevices:
+        - devicePath: /dev/block
+          name: my-volume
+        securityContext:
+      restartPolicy: Never
+      volumes:
+      - name: my-volume
+        persistentVolumeClaim:
+          claimName: raw-block-volume-poc-pvc

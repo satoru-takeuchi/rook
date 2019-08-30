@@ -189,20 +189,9 @@ func getAvailableDevices(context *clusterd.Context, desiredDevices []DesiredDevi
 		if device.Type == sys.PartType {
 			continue
 		}
-		var partCount int
-		var ownPartitions bool
-		var fs string
-		var err error
-		if device.Name == "raw-block-volume-poc" {
-			partCount = 1
-			ownPartitions = true
-			fs = ""
-			err = nil
-		} else {
-			partCount, ownPartitions, fs, err = sys.CheckIfDeviceAvailable(context.Executor, device.Name)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get device %s info. %+v", device.Name, err)
-			}
+		partCount, ownPartitions, fs, err := sys.CheckIfDeviceAvailable(context.Executor, device.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get device %s info. %+v", device.Name, err)
 		}
 
 		if fs != "" || !ownPartitions {

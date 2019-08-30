@@ -6,5 +6,6 @@
 /_output
 /vendor/
 /vendor.orig/
+go.sum
 
 /tests/integration/rook-test/
