@@ -41,7 +41,8 @@ spec:
 #      directories:
 #      - path: "/data/rook-dir"
       devices:
-      - name: "vdb"
+#      - name: "vdb"
+      - name: "raw-block-volume-poc"
 #      - name: "nvme01" # multiple osds can be created on high performance devices
 #        config:
 #          osdsPerDevice: "5"

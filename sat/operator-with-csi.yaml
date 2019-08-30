@@ -54,6 +54,8 @@ spec:
           value: "quay.io/k8scsi/csi-snapshotter:v1.0.1"
         - name: ROOK_CSI_ATTACHER_IMAGE
           value: "quay.io/k8scsi/csi-attacher:v1.0.1"
+        - name: ROOK_DISCOVER_DEVICES_INTERVAL
+          value: "1m"
         # The name of the node to pass with the downward API
         - name: NODE_NAME
           valueFrom:
