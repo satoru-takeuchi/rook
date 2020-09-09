@@ -127,12 +127,12 @@ func (suite *CephMgrSuite) waitForOrchestrationModule() {
 		err, output := suite.execute([]string{"status"})
 		logger.Infof("%s", output)
 		if err == nil {
-			logger.Info("Rook Toolbox ready to execute commands")
+			logger.Info("Rook orchestrator module is ready")
 			return
 		}
 		time.Sleep(2 * time.Second)
 	}
-	logger.Error("Giving up waiting for Rook Toolbox to be ready")
+	logger.Error("Giving up waiting for Rook orchestrator module to be ready")
 	assert.Nil(suite.T(), err)
 }
 func (suite *CephMgrSuite) TestDeviceLs() {
