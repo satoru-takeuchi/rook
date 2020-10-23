@@ -84,6 +84,14 @@ func (hs *HelmSuite) createPools() {
 func (hs *HelmSuite) TearDownSuite() {
 	hs.deletePools()
 	hs.op.Teardown()
+	hs.cleanupDisks()
+}
+
+func (hs *HelmSuite) cleanupDisks() {
+	cleanupDeviceCmd := "tests/scripts/cleanupDisks.sh"
+	cmdArgs := utils.CommandArgs{Command: cleanupDeviceCmd, CmdArgs: []string{installer.TestScratchDevice(), installer.TestScratchDevice2()}}
+	cmdOut := utils.ExecuteCommand(cmdArgs)
+	logger.Infof("cleanup disks output: %v", cmdOut)
 }
 
 // Test to make sure all rook components are installed and Running
