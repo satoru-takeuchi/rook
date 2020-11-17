@@ -27,6 +27,7 @@ import (
 	rookclient "github.com/rook/rook/pkg/client/clientset/versioned/fake"
 	"github.com/rook/rook/pkg/client/clientset/versioned/scheme"
 	"github.com/rook/rook/pkg/clusterd"
+	"github.com/rook/rook/pkg/daemon/ceph/client"
 	"github.com/rook/rook/pkg/operator/k8sutil"
 	"github.com/rook/rook/pkg/operator/test"
 	exectest "github.com/rook/rook/pkg/util/exec/test"
@@ -201,11 +202,13 @@ func TestCephRBDMirrorController(t *testing.T) {
 
 	// Create a ReconcileCephRBDMirror object with the scheme and fake client.
 	r = &ReconcileCephRBDMirror{
-		client:  cl,
-		scheme:  s,
-		context: c,
-		peers:   make(map[string]*peerSpec),
+		client:      cl,
+		scheme:      s,
+		context:     c,
+		clusterInfo: &client.ClusterInfo{Namespace: namespace, OwnerInfo: *client.NewOwnerInfo(cephCluster, true, s)},
+		peers:       make(map[string]*peerSpec),
 	}
+	panic("* unkounko: " + r.clusterInfo.Namespace)
 
 	logger.Info("STARTING PHASE 4")
 
