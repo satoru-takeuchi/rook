@@ -106,6 +106,7 @@ func newTestStartClusterWithQuorumResponse(t *testing.T, namespace string, monRe
 }
 
 func newCluster(context *clusterd.Context, namespace string, allowMultiplePerNode bool, resources v1.ResourceRequirements) *Cluster {
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	return &Cluster{
 		ClusterInfo: nil,
 		context:     context,
@@ -124,7 +125,7 @@ func newCluster(context *clusterd.Context, namespace string, allowMultiplePerNod
 		mapping: &Mapping{
 			Schedule: map[string]*MonScheduleInfo{},
 		},
-		ownerRef: metav1.OwnerReference{},
+		ownerInfo: ownerInfo,
 	}
 }
 
@@ -235,7 +236,8 @@ func TestSaveMonEndpoints(t *testing.T) {
 	clientset := test.New(t, 1)
 	configDir, _ := ioutil.TempDir("", "")
 	defer os.RemoveAll(configDir)
-	c := New(&clusterd.Context{Clientset: clientset, ConfigDir: configDir}, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(&clusterd.Context{Clientset: clientset, ConfigDir: configDir}, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 	setCommonMonProperties(c, 1, cephv1.MonSpec{Count: 3, AllowMultiplePerNode: true}, "myversion")
 
 	// create the initial config map
@@ -282,7 +284,8 @@ func TestMaxMonID(t *testing.T) {
 	clientset := test.New(t, 1)
 	configDir, _ := ioutil.TempDir("", "")
 	defer os.RemoveAll(configDir)
-	c := New(&clusterd.Context{Clientset: clientset, ConfigDir: configDir}, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(&clusterd.Context{Clientset: clientset, ConfigDir: configDir}, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 
 	// when the configmap is not found, the maxMonID is -1
 	maxMonID, err := c.getStoredMaxMonID()

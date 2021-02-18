@@ -22,6 +22,7 @@ import (
 	"time"
 
 	cephver "github.com/rook/rook/pkg/operator/ceph/version"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -35,7 +36,7 @@ type ClusterInfo struct {
 	Monitors      map[string]*MonInfo
 	CephVersion   cephver.CephVersion
 	Namespace     string
-	OwnerRef      metav1.OwnerReference
+	OwnerInfo     *k8sutil.OwnerInfo
 	// Hide the name of the cluster since in 99% of uses we want to use the cluster namespace.
 	// If the CR name is needed, access it through the NamespacedName() method.
 	name              string
@@ -76,12 +77,14 @@ func (c *ClusterInfo) NamespacedName() types.NamespacedName {
 // so this clusterInfo cannot be used to generate the mon config or request the
 // namespacedName. A full cluster info must be populated for those operations.
 func AdminClusterInfo(namespace string) *ClusterInfo {
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	return &ClusterInfo{
 		Namespace: namespace,
 		CephCred: CephCred{
 			Username: AdminUsername,
 		},
-		name: "testing",
+		name:      "testing",
+		OwnerInfo: ownerInfo,
 	}
 }
 

@@ -26,6 +26,7 @@ import (
 	"github.com/rook/rook/pkg/daemon/ceph/client"
 	cephclient "github.com/rook/rook/pkg/daemon/ceph/client"
 	cephver "github.com/rook/rook/pkg/operator/ceph/version"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	"github.com/rook/rook/pkg/operator/test"
 	exectest "github.com/rook/rook/pkg/util/exec/test"
 	"github.com/stretchr/testify/assert"
@@ -53,7 +54,8 @@ func TestGeneratePassword(t *testing.T) {
 func TestGetOrGeneratePassword(t *testing.T) {
 	ctx := context.TODO()
 	clientset := test.New(t, 3)
-	clusterInfo := &client.ClusterInfo{Namespace: "myns"}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	clusterInfo := &client.ClusterInfo{Namespace: "myns", OwnerInfo: ownerInfo}
 	c := &Cluster{context: &clusterd.Context{Clientset: clientset}, clusterInfo: clusterInfo}
 	_, err := c.context.Clientset.CoreV1().Secrets(clusterInfo.Namespace).Get(ctx, dashboardPasswordName, metav1.GetOptions{})
 	assert.True(t, kerrors.IsNotFound(err))
@@ -109,9 +111,11 @@ func TestStartSecureDashboard(t *testing.T) {
 		return executor.MockExecuteCommandWithOutputFile(command, outfileArg, arg...)
 	}
 
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	clusterInfo := &cephclient.ClusterInfo{
 		Namespace:   "myns",
 		CephVersion: cephver.Nautilus,
+		OwnerInfo:   ownerInfo,
 	}
 	c := &Cluster{clusterInfo: clusterInfo, context: &clusterd.Context{Clientset: clientset, Executor: executor},
 		spec: cephv1.ClusterSpec{

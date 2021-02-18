@@ -19,9 +19,9 @@ package mds
 import (
 	"testing"
 
-	"github.com/rook/rook/pkg/client/clientset/versioned/scheme"
 	"github.com/rook/rook/pkg/operator/ceph/config"
 	"github.com/rook/rook/pkg/operator/ceph/controller"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
 	"github.com/rook/rook/pkg/clusterd"
@@ -74,16 +74,15 @@ func testDeploymentObject(t *testing.T, network cephv1.NetworkSpec) (*apps.Deplo
 		},
 		fs,
 		&client.CephFilesystemDetails{ID: 15},
-		metav1.OwnerReference{},
+		&k8sutil.OwnerInfo{},
 		"/var/lib/rook/",
-		scheme.Scheme,
 	)
 	mdsTestConfig := &mdsConfig{
 		DaemonID:     "myfs-a",
 		ResourceName: "rook-ceph-mds-myfs-a",
 		DataPathMap:  config.NewStatelessDaemonDataPathMap(config.MdsType, "myfs-a", "rook-ceph", "/var/lib/rook/"),
 	}
-	return c.makeDeployment(mdsTestConfig)
+	return c.makeDeployment(mdsTestConfig, "ns")
 }
 
 func TestPodSpecs(t *testing.T) {

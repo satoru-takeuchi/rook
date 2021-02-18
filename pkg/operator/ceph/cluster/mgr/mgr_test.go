@@ -28,6 +28,7 @@ import (
 	"github.com/rook/rook/pkg/clusterd"
 	cephclient "github.com/rook/rook/pkg/daemon/ceph/client"
 	cephver "github.com/rook/rook/pkg/operator/ceph/version"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	testopk8s "github.com/rook/rook/pkg/operator/k8sutil/test"
 	testop "github.com/rook/rook/pkg/operator/test"
 	exectest "github.com/rook/rook/pkg/util/exec/test"
@@ -39,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestStartMgr(t *testing.T) {
@@ -63,7 +65,12 @@ func TestStartMgr(t *testing.T) {
 		ConfigDir:                  configDir,
 		Clientset:                  clientset,
 		RequestCancelOrchestration: abool.New()}
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid"}
+	cluster := &cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	ownerInfo := k8sutil.NewOwnerInfo(cluster, scheme)
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid", OwnerInfo: ownerInfo}
 	clusterInfo.SetName("test")
 	clusterSpec := cephv1.ClusterSpec{
 		Annotations:        map[rookv1.KeyType]rookv1.Annotations{cephv1.KeyMgr: {"my": "annotation"}},
@@ -77,7 +84,7 @@ func TestStartMgr(t *testing.T) {
 	defer os.RemoveAll(c.spec.DataDirHostPath)
 
 	// start a basic service
-	err := c.Start()
+	err = c.Start()
 	assert.Nil(t, err)
 	validateStart(t, c)
 	assert.ElementsMatch(t, []string{}, testopk8s.DeploymentNamesUpdated(deploymentsUpdated))
@@ -195,12 +202,17 @@ func TestMgrSidecarReconcile(t *testing.T) {
 		ConfigDir: configDir,
 		Clientset: clientset,
 	}
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns"}
+	cluster := &cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	ownerInfo := k8sutil.NewOwnerInfo(cluster, scheme)
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", OwnerInfo: ownerInfo}
 	clusterInfo.SetName("test")
 	c := &Cluster{spec: spec, context: ctx, clusterInfo: clusterInfo}
 
 	// Update services according to the active mgr
-	err := c.ReconcileMultipleServices(activeMgr, false)
+	err = c.ReconcileMultipleServices(activeMgr, false)
 	assert.NoError(t, err)
 	assert.False(t, calledMgrStat)
 	assert.True(t, calledMgrDump)

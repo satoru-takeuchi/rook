@@ -31,6 +31,7 @@ import (
 	"github.com/rook/rook/pkg/daemon/ceph/client"
 	clienttest "github.com/rook/rook/pkg/daemon/ceph/client/test"
 	"github.com/rook/rook/pkg/operator/ceph/config"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	testopk8s "github.com/rook/rook/pkg/operator/k8sutil/test"
 	"github.com/rook/rook/pkg/operator/test"
 	exectest "github.com/rook/rook/pkg/util/exec/test"
@@ -61,7 +62,8 @@ func TestCheckHealth(t *testing.T) {
 		Executor:                   executor,
 		RequestCancelOrchestration: abool.New(),
 	}
-	c := New(context, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(context, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 	// clusterInfo is nil so we return err
 	err := c.checkHealth()
 	assert.NotNil(t, err)
@@ -152,7 +154,8 @@ func TestScaleMonDeployment(t *testing.T) {
 	ctx := context.TODO()
 	clientset := test.New(t, 1)
 	context := &clusterd.Context{Clientset: clientset}
-	c := New(context, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(context, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 	setCommonMonProperties(c, 1, cephv1.MonSpec{Count: 0, AllowMultiplePerNode: true}, "myversion")
 
 	name := "a"
@@ -199,7 +202,8 @@ func TestCheckHealthNotFound(t *testing.T) {
 		Executor:                   executor,
 		RequestCancelOrchestration: abool.New(),
 	}
-	c := New(context, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(context, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 	setCommonMonProperties(c, 2, cephv1.MonSpec{Count: 3, AllowMultiplePerNode: true}, "myversion")
 	c.waitForStart = false
 	defer os.RemoveAll(c.context.ConfigDir)
@@ -257,7 +261,8 @@ func TestAddRemoveMons(t *testing.T) {
 		Executor:                   executor,
 		RequestCancelOrchestration: abool.New(),
 	}
-	c := New(context, "ns", cephv1.ClusterSpec{}, metav1.OwnerReference{}, &sync.Mutex{})
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	c := New(context, "ns", cephv1.ClusterSpec{}, ownerInfo, &sync.Mutex{})
 	setCommonMonProperties(c, 0, cephv1.MonSpec{Count: 5, AllowMultiplePerNode: true}, "myversion")
 	c.maxMonID = 0 // "a" is max mon id
 	c.waitForStart = false

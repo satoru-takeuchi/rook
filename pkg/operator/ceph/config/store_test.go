@@ -25,6 +25,7 @@ import (
 	"github.com/rook/rook/pkg/clusterd"
 	cephclient "github.com/rook/rook/pkg/daemon/ceph/client"
 	clienttest "github.com/rook/rook/pkg/daemon/ceph/client/test"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	testop "github.com/rook/rook/pkg/operator/test"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,9 +38,9 @@ func TestStore(t *testing.T) {
 		Clientset: clientset,
 	}
 	ns := "rook-ceph"
-	owner := metav1.OwnerReference{}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 
-	s := GetStore(ctx, ns, &owner)
+	s := GetStore(ctx, ns, ownerInfo)
 
 	assertConfigStore := func(ci *cephclient.ClusterInfo) {
 		sec, e := clientset.CoreV1().Secrets(ns).Get(ctxt, StoreName, metav1.GetOptions{})
@@ -81,9 +82,9 @@ func TestEnvVarsAndFlags(t *testing.T) {
 		Clientset: clientset,
 	}
 	ns := "rook-ceph"
-	owner := metav1.OwnerReference{}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 
-	s := GetStore(ctx, ns, &owner)
+	s := GetStore(ctx, ns, ownerInfo)
 	err := s.CreateOrUpdate(clienttest.CreateTestClusterInfo(3))
 	assert.NoError(t, err)
 

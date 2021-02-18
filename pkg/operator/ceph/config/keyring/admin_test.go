@@ -37,10 +37,10 @@ func TestAdminKeyringStore(t *testing.T) {
 		Clientset: clientset,
 	}
 	ns := "test-ns"
-	owner := metav1.OwnerReference{}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	clusterInfo := clienttest.CreateTestClusterInfo(1)
 	clusterInfo.Namespace = ns
-	k := GetSecretStore(ctx, clusterInfo, &owner)
+	k := GetSecretStore(ctx, clusterInfo, ownerInfo)
 
 	assertKeyringData := func(expectedKeyring string) {
 		s, e := clientset.CoreV1().Secrets(ns).Get(ctxt, "rook-ceph-admin-keyring", metav1.GetOptions{})
@@ -68,9 +68,9 @@ func TestAdminVolumeAndMount(t *testing.T) {
 	ctx := &clusterd.Context{
 		Clientset: clientset,
 	}
-	owner := metav1.OwnerReference{}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	clusterInfo := clienttest.CreateTestClusterInfo(1)
-	s := GetSecretStore(ctx, clusterInfo, &owner)
+	s := GetSecretStore(ctx, clusterInfo, ownerInfo)
 
 	clusterInfo.CephCred.Secret = "adminsecretkey"
 	err := s.Admin().CreateOrUpdate(clusterInfo)

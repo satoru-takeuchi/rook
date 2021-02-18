@@ -142,6 +142,11 @@ func TestAddRemoveNode(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	clusterInfo.SetName("rook-ceph-test")
+	cluster := cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	clusterInfo.OwnerInfo = k8sutil.NewOwnerInfo(&cluster, scheme)
 	generateKey := "expected key"
 	executor := &exectest.MockExecutor{
 		MockExecuteCommandWithOutputFile: func(command string, outFileArg string, args ...string) (string, error) {
@@ -193,7 +198,7 @@ func TestAddRemoveNode(t *testing.T) {
 	osdPod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{
 		Name:   "osdPod",
 		Labels: map[string]string{k8sutil.AppAttr: AppName}}}
-	_, err := c.context.Clientset.CoreV1().Pods(c.clusterInfo.Namespace).Create(ctx, osdPod, metav1.CreateOptions{})
+	_, err = c.context.Clientset.CoreV1().Pods(c.clusterInfo.Namespace).Create(ctx, osdPod, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// mock the ceph calls that will be called during remove node
@@ -296,6 +301,11 @@ func TestAddNodeFailure(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	clusterInfo.SetName("testcluster")
+	cluster := &cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	clusterInfo.OwnerInfo = k8sutil.NewOwnerInfo(cluster, scheme)
 	context := &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: &exectest.MockExecutor{}, RequestCancelOrchestration: abool.New()}
 	spec := cephv1.ClusterSpec{
 		DataDirHostPath: context.ConfigDir,
@@ -383,6 +393,11 @@ func TestGetPVCHostName(t *testing.T) {
 func TestGetOSDInfo(t *testing.T) {
 	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns"}
 	clusterInfo.SetName("test")
+	cluster := &cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	clusterInfo.OwnerInfo = k8sutil.NewOwnerInfo(cluster, scheme)
 	context := &clusterd.Context{}
 	spec := cephv1.ClusterSpec{DataDirHostPath: "/rook"}
 	c := New(context, clusterInfo, spec, "myversion")
@@ -520,6 +535,11 @@ func TestDetectCrushLocation(t *testing.T) {
 func TestGetOSDInfoWithCustomRoot(t *testing.T) {
 	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns"}
 	clusterInfo.SetName("test")
+	cluster := cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	clusterInfo.OwnerInfo = k8sutil.NewOwnerInfo(&cluster, scheme)
 	context := &clusterd.Context{}
 	spec := cephv1.ClusterSpec{
 		DataDirHostPath: "/rook",

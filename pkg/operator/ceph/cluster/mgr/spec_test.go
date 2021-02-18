@@ -26,15 +26,18 @@ import (
 	"github.com/rook/rook/pkg/operator/ceph/config"
 	"github.com/rook/rook/pkg/operator/ceph/controller"
 	cephtest "github.com/rook/rook/pkg/operator/ceph/test"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	optest "github.com/rook/rook/pkg/operator/test"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestPodSpec(t *testing.T) {
 	clientset := optest.New(t, 1)
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid"}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid", OwnerInfo: ownerInfo}
 	clusterInfo.SetName("test")
 	clusterSpec := cephv1.ClusterSpec{
 		CephVersion:        cephv1.CephVersionSpec{Image: "ceph/ceph:myceph"},
@@ -80,11 +83,13 @@ func TestPodSpec(t *testing.T) {
 
 func TestServiceSpec(t *testing.T) {
 	clientset := optest.New(t, 1)
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid"}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid", OwnerInfo: ownerInfo}
 	clusterSpec := cephv1.ClusterSpec{}
 	c := New(&clusterd.Context{Clientset: clientset}, clusterInfo, clusterSpec, "myversion")
 
-	s := c.MakeMetricsService("rook-mgr", "foo", serviceMetricName)
+	s, err := c.MakeMetricsService("rook-mgr", "foo", serviceMetricName)
+	assert.NoError(t, err)
 	assert.NotNil(t, s)
 	assert.Equal(t, "rook-mgr", s.Name)
 	assert.Equal(t, 1, len(s.Spec.Ports))
@@ -95,7 +100,8 @@ func TestServiceSpec(t *testing.T) {
 
 func TestHostNetwork(t *testing.T) {
 	clientset := optest.New(t, 1)
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid"}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid", OwnerInfo: ownerInfo}
 	clusterInfo.SetName("test")
 	clusterSpec := cephv1.ClusterSpec{
 		Network:         cephv1.NetworkSpec{HostNetwork: true},
@@ -123,7 +129,8 @@ func TestApplyPrometheusAnnotations(t *testing.T) {
 	clusterSpec := cephv1.ClusterSpec{
 		DataDirHostPath: "/var/lib/rook/",
 	}
-	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid"}
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
+	clusterInfo := &cephclient.ClusterInfo{Namespace: "ns", FSID: "myfsid", OwnerInfo: ownerInfo}
 	clusterInfo.SetName("test")
 	c := New(&clusterd.Context{Clientset: clientset}, clusterInfo, clusterSpec, "myversion")
 

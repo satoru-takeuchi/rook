@@ -225,6 +225,11 @@ func testOSDsOnPVC(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	clusterInfo.SetName("mycluster")
+	cluster := &cephv1.CephCluster{}
+	scheme := runtime.NewScheme()
+	err := cephv1.AddToScheme(scheme)
+	assert.NoError(t, err)
+	clusterInfo.OwnerInfo = k8sutil.NewOwnerInfo(cluster, scheme)
 	executor := osdPVCTestExecutor(t, clientset, namespace)
 
 	context := &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: executor, RequestCancelOrchestration: abool.New()}

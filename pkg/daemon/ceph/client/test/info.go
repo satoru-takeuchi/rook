@@ -24,6 +24,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rook/rook/pkg/daemon/ceph/client"
+	"github.com/rook/rook/pkg/operator/k8sutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func CreateConfigDir(configDir string) error {
@@ -42,6 +44,7 @@ func CreateConfigDir(configDir string) error {
 // CreateTestClusterInfo creates a test cluster info
 // This would be best in a test package, but is included here to avoid cyclic dependencies
 func CreateTestClusterInfo(monCount int) *client.ClusterInfo {
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "default")
 	c := &client.ClusterInfo{
 		FSID:          "12345",
 		Namespace:     "default",
@@ -50,7 +53,8 @@ func CreateTestClusterInfo(monCount int) *client.ClusterInfo {
 			Username: client.AdminUsername,
 			Secret:   "adminkey",
 		},
-		Monitors: map[string]*client.MonInfo{},
+		Monitors:  map[string]*client.MonInfo{},
+		OwnerInfo: ownerInfo,
 	}
 	mons := []string{"a", "b", "c", "d", "e"}
 	for i := 0; i < monCount; i++ {

@@ -26,6 +26,7 @@ import (
 	"github.com/rook/rook/pkg/operator/ceph/config"
 	"github.com/rook/rook/pkg/operator/ceph/controller"
 	cephtest "github.com/rook/rook/pkg/operator/ceph/test"
+	"github.com/rook/rook/pkg/operator/k8sutil"
 	testop "github.com/rook/rook/pkg/operator/test"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -42,11 +43,12 @@ func TestPodSpecs(t *testing.T) {
 
 func testPodSpec(t *testing.T, monID string, pvc bool) {
 	clientset := testop.New(t, 1)
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	c := New(
 		&clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook"},
 		"ns",
 		cephv1.ClusterSpec{},
-		metav1.OwnerReference{},
+		ownerInfo,
 		&sync.Mutex{},
 	)
 	setCommonMonProperties(c, 0, cephv1.MonSpec{Count: 3, AllowMultiplePerNode: true}, "rook/rook:myversion")
@@ -91,11 +93,12 @@ func testPodSpec(t *testing.T, monID string, pvc bool) {
 
 func TestDeploymentPVCSpec(t *testing.T) {
 	clientset := testop.New(t, 1)
+	ownerInfo := k8sutil.NewOwnerInfoWithOwnerRef(&metav1.OwnerReference{}, "")
 	c := New(
 		&clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook"},
 		"ns",
 		cephv1.ClusterSpec{},
-		metav1.OwnerReference{},
+		ownerInfo,
 		&sync.Mutex{},
 	)
 	setCommonMonProperties(c, 0, cephv1.MonSpec{Count: 3, AllowMultiplePerNode: true}, "rook/rook:myversion")
@@ -155,7 +158,7 @@ func testRequiredDuringScheduling(t *testing.T, hostNetwork, allowMultiplePerNod
 		&clusterd.Context{},
 		"ns",
 		cephv1.ClusterSpec{},
-		metav1.OwnerReference{},
+		&k8sutil.OwnerInfo{},
 		&sync.Mutex{},
 	)
 
